@@ -1,0 +1,113 @@
+devices:
+
+  # ---------------------------------------------------------
+  # Waveshare 10.1" JD9365 MIPI-DSI display (800x1280)
+  # ---------------------------------------------------------
+  - name: display_lcd
+    chip: jd9365
+    type: display_lcd
+    sub_type: dsi
+
+    dependencies:
+      waveshare/esp_lcd_jd9365_10_1: "*"
+
+    config:
+      reset_gpio_num: 27
+      rgb_ele_order: LCD_RGB_ELEMENT_ORDER_RGB
+      data_endian: LCD_RGB_DATA_ENDIAN_LITTLE
+      bits_per_pixel: 16
+      reset_active_high: 0
+
+      dbi_config:
+        virtual_channel: 0
+        lcd_cmd_bits: 8
+        lcd_param_bits: 8
+
+      dpi_config:
+        virtual_channel: 0
+        dpi_clk_src: MIPI_DSI_DPI_CLK_SRC_DEFAULT
+        dpi_clock_freq_mhz: 80
+
+        pixel_format: LCD_COLOR_PIXEL_FORMAT_RGB565
+        in_color_format: LCD_COLOR_FMT_RGB565
+        out_color_format: LCD_COLOR_FMT_RGB565
+
+        num_fbs: 1
+
+        flags:
+          use_dma2d: true
+          disable_lp: false
+
+        video_timing:
+          h_size: 800
+          v_size: 1280
+
+          hsync_back_porch: 20
+          hsync_pulse_width: 20
+          hsync_front_porch: 40
+
+          vsync_back_porch: 10
+          vsync_pulse_width: 4
+          vsync_front_porch: 30
+
+    peripherals:
+      - ldo_name: ldo_mipi
+      - dsi_name: dsi_display
+
+
+  # ---------------------------------------------------------
+  # GT911/GT9271 capacitive touchscreen
+  # ---------------------------------------------------------
+  - name: lcd_touch
+    chip: gt911
+    type: lcd_touch
+    sub_type: i2c
+    version: default
+
+    dependencies:
+      esp_lcd_touch:
+        version: "*"
+        require: public
+      espressif/esp_lcd_touch_gt911: "*"
+
+    config:
+
+      io_i2c_config:
+        control_phase_bytes: 1
+        dc_bit_offset: 0
+        lcd_cmd_bits: 16
+        scl_speed_hz: 400000
+
+        flags:
+          disable_control_phase: true
+
+      touch_config:
+        x_max: 800
+        y_max: 1280
+
+        rst_gpio_num: -1
+        int_gpio_num: -1
+
+        levels:
+          reset: 0
+          interrupt: 0
+
+        flags:
+          swap_xy: false
+          mirror_x: false
+          mirror_y: false
+
+    peripherals:
+      - i2c_name: i2c_master
+        i2c_addr: [0xba, 0x28]
+
+
+  # ---------------------------------------------------------
+  # LCD backlight
+  # ---------------------------------------------------------
+  - name: lcd_brightness
+    type: ledc_ctrl
+    version: default
+
+    peripherals:
+      - name: ledc_backlight
